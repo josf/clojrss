@@ -26,13 +26,13 @@
 
 (defn parse-rsslist-file [db urlfile]
   (with-open [r (reader urlfile)]
-    (parssrss db (line-seq r))))
+    (parssrss  (line-seq r) db)))
 
 
-(defn parssrss [db sq]
+(defn parssrss [sq db]
   (if (not sq)
     db
-    (parssrss (db-add-line db (first sq)) (rest sq))))
+    (recur (rest sq) (db-add-line db (first sq)))))
 
 (defn db-add-line [db line]
   (let [lspl (.split line " ")]
