@@ -6,23 +6,7 @@
 (defn init-feed-db [] 
   #{})
 
-(defn add-feeds [db feed] (into db feed))
-
 ;; from http://groups.google.com/group/clojure/browse_thread/thread/380fdd164a5c5b7a/6c2ce06780ce5ddf?lnk=gst&q=line-seq&pli=1
-
-(defn file-lines
-         [file-name]
-         (line-seq (BufferedReader. (FileReader. file-name))))
-
-
-(defn parse-rsslist-file [db feedlist-filename]
- (with-open [r (reader feedlist-filename)]
-   (doseq [line (line-seq r)]
-     (let [url (first (.split line " "))
-           nam (second (.split line " "))]
-       (println "adding")
-       (add-feeds db (struct feed nam nil url nil))))))
-
 
 (defn parse-rsslist-file [db urlfile]
   (with-open [r (reader urlfile)]
