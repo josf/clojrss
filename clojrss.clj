@@ -42,14 +42,4 @@
                   :url (first lspl)) db)))
 
 
-
-
-(defn parse-single-rss-line [line]
-  ()
-
-(with-open [r (reader feed-file-name)]
-        (doseq [line (line-seq r)]
-          (println (first (rest (.split line " "))))))
-
-
            
