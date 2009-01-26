@@ -72,6 +72,18 @@ vector [body status ETag Last-Modified"
                  (str (get feed :lmodif))
                  (str (get feed :etag)))]
     (when (= (second feedvec) 200) ; status
+      (write-rss-file (get feed :name) (first feedvec))
       (assoc feed  
         :etag (nth feedvec 2)
         :lmodif (nth feedvec 3)))))
+
+(defn write-rss-file [filename data]
+  (spit (rss-filename filename) data))
+
+(defn rss-filename [filename]
+  (let [f (str filename)]
+   (if
+       (= (.indexOf f ".xml") -1)
+     (str f ".xml")
+     f)))
+
