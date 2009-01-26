@@ -5,7 +5,7 @@
         '(java.lang StringBuilder)
         '(java.io BufferedReader InputStreamReader))
 
-(import '(clj-http-client.core))
+(use '[clj-http-client.core])
 (use '[clojure.contrib.duck-streams :only (reader)])
 (defstruct feed :name :title :url :type :etag :last-update)
 
@@ -17,7 +17,6 @@
 (defn parse-rsslist-file [db urlfile]
   (with-open [r (reader urlfile)]
     (parssrss  (line-seq r) db)))
-
 
 (defn parssrss [sq db]
   (if (not sq)
@@ -31,28 +30,30 @@
                   :title nil
                   :url (first lspl)) db)))
 
-(defn fetch-url
-  "Return the web page as a string."
-  [address]
-  (let [url (URL. address)]
-    (with-open [stream (. url (openStream))]
-      (let [buf (BufferedReader. (InputStreamReader. stream))]
-        (apply str (line-seq buf))))))
-
 
 ;;; getting ETag and Last-Modified
 (let [[status headers body] (http-get "http://ajaxian.com/index.xml")]
         (list (get headers "ETag") (get headers "Last-Modified"))) 
 
 (defn check-feed
-  "Check if feed has been updated and grab it if it has."
+  "Check if feed has been updated and grab it if it has. Returns a
+vector [body status ETag Last-Modified"
+
   [feed etag lmodif]
-  (let [[status headers body] (http-get feed { "If-Modified-Since" lmodif 
-                                               "If-None-Matc" etag })]
-    (println (str "Status: " status))
+  (let [[status headers body] (http-get feed 
+                                        (cond
+                                         (and lmodif etag)
+                                         { "If-Modified-Since" lmodif 
+                                           "If-None-Match" etag}
+                                         etag
+                                         {"If-None-Match" etag}
+                                         lmodif  
+                                         { "If-Modified-Since" lmodif }))]
     (doseq [h (keys headers)]
       (println (str h " " (get headers h))))
-    (when (or (= status 200)
-              (= status 304))
-      (list (get headers "ETag") (get headers "Last-Modified")))))
+    (when (and status
+               (or (= status 200)
+                   (= status 304)))
+      (println (str "Status: " status))
+      [body status  (get headers "ETag") (get headers "Last-Modified")])))
       
