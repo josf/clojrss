@@ -6,8 +6,8 @@
         '(java.io BufferedReader InputStreamReader))
 
 (use '[clj-http-client.core])
-(use '[clojure.contrib.duck-streams :only (reader)])
-(defstruct feed :name :title :url :type :etag :last-update)
+(use '[clojure.contrib.duck-streams :only (reader spit)])
+(defstruct feed :name :title :url :type :etag :lmodif)
 
 (defn init-feed-db [] 
   #{})
@@ -30,6 +30,15 @@
                   :title nil
                   :url (first lspl)) db)))
 
+(defn db-save [db filename]
+  (spit 
+   filename 
+   (with-out-str (print db))))
+
+(defn db-load [filename]
+  (with-in-str  (slurp filename)
+    (read)))
+
 
 ;;; getting ETag and Last-Modified
 (let [[status headers body] (http-get "http://ajaxian.com/index.xml")]
@@ -49,11 +58,20 @@ vector [body status ETag Last-Modified"
                                          {"If-None-Match" etag}
                                          lmodif  
                                          { "If-Modified-Since" lmodif }))]
-    (doseq [h (keys headers)]
-      (println (str h " " (get headers h))))
     (when (and status
                (or (= status 200)
                    (= status 304)))
       (println (str "Status: " status))
-      [body status  (get headers "ETag") (get headers "Last-Modified")])))
+      [ body status  
+        (get headers "ETag") 
+        (get headers "Last-Modified")])))
       
+(defn feed-struct-update [feed]
+  (let [feedvec (check-feed 
+                 (str (get feed :url))
+                 (str (get feed :lmodif))
+                 (str (get feed :etag)))]
+    (when (= (second feedvec) 200) ; status
+      (assoc feed  
+        :etag (nth feedvec 2)
+        :lmodif (nth feedvec 3)))))
