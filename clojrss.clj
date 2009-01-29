@@ -20,9 +20,9 @@
 (defn db-add-line [db line]
   (let [lspl (.split line " ")]
     (cons (struct-map feed 
-                  :name (second lspl)
+                  :name (str (second lspl))
                   :title nil
-                  :url (first lspl)) db)))
+                  :url (str (first lspl))) db)))
 
 (defn parssrss [sq db]
   (if (not sq)
@@ -62,8 +62,8 @@ vector [body status ETag Last-Modified"
                    (= status 304)))
       (println (str "Status: " status))
       [ body status  
-        (get headers "ETag") 
-        (get headers "Last-Modified")])))
+        (str (get headers "ETag"))
+        (str (get headers "Last-Modified"))])))
 
 (defn rss-filename [filename]
   (let [dir "/home/joseph/localrss/dl/"
