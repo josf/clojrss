@@ -7,7 +7,10 @@
 
 (use '[clj-http-client.core])
 (use '[clojure.contrib.duck-streams :only (reader spit)])
-(defstruct feed :name :title :url :type :etag :lmodif)
+(use '[clojure.zip])
+(use '[clojure.contrib.zip-filter.xml])
+
+(defstruct feed :name :title :url :type :etag :lmodif :xml)
 
 (defn init-feed-db [] 
   #{})
