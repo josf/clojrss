@@ -101,10 +101,10 @@ vector [body status ETag Last-Modified"
       (write-rss-file (get feed :name) (first feedvec))
       (assoc feed  
         :etag (nth feedvec 2)
-        :lmodif (nth feedvec 3)))))
+        :lmodif (nth feedvec 3)
+        :type (check-feed-type (first feedvec))))))
 
-
-
+        
 
 (defn replace-feed-by-url [db url nfeed]
   "Finds a feed in the db and replaces it with nfeed. Returns the new
