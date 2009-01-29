@@ -73,10 +73,25 @@ vector [body status ETag Last-Modified"
      (str dir f ".xml")
      (str dir f))))
 
+;;; copied from examples in zip-filter/xml.clj
+(defn parse-str [s]
+  (clojure.zip/xml-zip (clojure.xml/parse (new org.xml.sax.InputSource
+                               (new java.io.StringReader s)))))
 
 (defn write-rss-file [filename data]
   (spit (rss-filename filename) data))
       
+
+(defn check-feed-type [xml]
+"returns :atom if atomfeed, :rss otherwise"
+  (let [xmlzip (parse-str xml)]
+    (if (xml-> xmlzip  
+               (attr= :xmlns "http://www.w3.org/2005/Atom") 
+               (attr :xmlns))
+      :atom
+      :rss)))
+
+
 (defn feed-struct-update [feed]
   (let [feedvec (check-feed 
                  (str (get feed :url))
