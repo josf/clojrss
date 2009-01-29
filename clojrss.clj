@@ -124,3 +124,12 @@ db."
                        (get feed :url)
                        ;updating file is a side effect here
                        (feed-struct-update feed))) 
+
+(defn check-all-feeds [db]
+  (into (empty db)
+        (map 
+         (fn [feed]
+           (feed-struct-update feed))
+        db)))
+             
+    
