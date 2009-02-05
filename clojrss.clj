@@ -1,14 +1,20 @@
 ;(ns net.ramure.clojrss
 ;  (:import (java.io.BufferedReader FileReader)))
 
+(ns net.ramure.clojrss
+  (:use [clojure.contrib.duck-streams :only (reader spit)])
+  (:use [clojure.contrib.zip-filter.xml])
+  (:import [clojure.zip])
+  (:use [saxon])
+  (:use [clj-http-client.core]))
+
+
+
 (import '(java.net URL)
         '(java.lang StringBuilder)
         '(java.io BufferedReader InputStreamReader))
 
-(use '[clj-http-client.core])
-(use '[clojure.contrib.duck-streams :only (reader spit)])
-(use '[clojure.zip])
-(use '[clojure.contrib.zip-filter.xml])
+
 
 (defstruct feed :name :title :url :type :etag :lmodif :xml)
 
