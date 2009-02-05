@@ -26,9 +26,9 @@
 (defn db-add-line [db line]
   (let [lspl (.split line " ")]
     (cons (struct-map feed 
-                  :name (str (second lspl))
+                  :name (pr-str (second lspl))
                   :title nil
-                  :url (str (first lspl))) db)))
+                  :url (pr-str (first lspl))) db)))
 
 (defn parssrss [sq db]
   (if (not sq)
@@ -39,7 +39,9 @@
   (with-open [r (reader urlfile)]
     (parssrss  (line-seq r) db)))
 
-
+;; irc example
+;;(binding [*print-dup* true] (println
+;;          (sorted-set 1 2 3) "String"))
 (defn db-save [db filename]
   (spit 
    filename 
