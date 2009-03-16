@@ -28,7 +28,8 @@
     (cons (struct-map feed 
                   :name (pr-str (second lspl))
                   :title nil
-                  :url (pr-str (first lspl))) db)))
+                  :url (pr-str (first lspl)))
+          db)))
 
 (defn parssrss [sq db]
   (if (not sq)
@@ -69,14 +70,14 @@ vector [body status ETag Last-Modified"
                (or (= status 200)
                    (= status 304)))
       (println (str "Status: " status))
-      [ body status  
-        (str (get headers "ETag"))
-        (str (get headers "Last-Modified"))])))
+      [body status  
+       (str (get headers "ETag"))
+       (str (get headers "Last-Modified"))])))
 
 (defn rss-filename [filename]
   (let [dir "/home/joseph/localrss/dl/"
         f (str filename)]
-   (if
+   (if 
        (= (.indexOf f ".xml") -1)
      (str dir f ".xml")
      (str dir f))))
