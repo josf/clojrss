@@ -8,13 +8,9 @@
   (:use [saxon])
   (:use [clj-http-client.core]))
 
-
-
 (import '(java.net URL)
         '(java.lang StringBuilder)
         '(java.io BufferedReader InputStreamReader))
-
-
 
 (defstruct feed :name :title :url :type :etag :lmodif :xml)
 
