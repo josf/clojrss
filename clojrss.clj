@@ -85,7 +85,6 @@ vector [body status ETag Last-Modified"
 
 (defn write-rss-file [filename data]
   (spit (rss-filename filename) data))
-      
 
 (defn check-feed-type [xml]
 "returns :atom if atomfeed, :rss otherwise"
