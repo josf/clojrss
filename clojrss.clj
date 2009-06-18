@@ -44,13 +44,23 @@
    filename 
    (with-out-str (print db))))
 
+(defn db-serializable [db]
+  (into (empty db)
+        (map 
+         (fn [fd]
+              (assoc fd 
+                  (when (string? (get fd key))
+                    (pr-str (get fd key))))
+         db))))
+
+
 (defn db-load [filename]
   (with-in-str  (slurp filename)
     (read)))
 
 (defn check-feed
   "Check if feed has been updated and grab it if it has. Returns a
-vector [body status ETag Last-Modified"
+vector [body status ETag Last-Modified]"
 
   [feed etag lmodif]
   (let [[status headers body] (http-get feed 
@@ -95,20 +105,27 @@ vector [body status ETag Last-Modified"
       :atom
       :rss)))
 
-
 (defn feed-struct-update [feed]
   (let [feedvec (check-feed 
                  (str (get feed :url))
                  (str (get feed :lmodif))
-                 (str (get feed :etag)))]
-    (when (= (second feedvec) 200) ; status
-      (write-rss-file (get feed :name) (first feedvec))
+                 (str (get feed :etag)))
+        feedtype (check-feed-type (first feedvec))]
+    (when (= (second feedvec) 200) ; status. On a 304, we do not write anything.
+      (write-rss-file 
+       (get feed :name) 
+       (if (= feedtype :atom)
+         (atom-to-rss (first feedvec))
+         (first feedvec)))
       (assoc feed  
-        :etag (nth feedvec 2)
+        :etag  (nth feedvec 2)
         :lmodif (nth feedvec 3)
-        :type (check-feed-type (first feedvec))))))
+        :type feedtype))))
 
-        
+(defn atom-to-rss [atomf]
+   ((compile-xslt (compile-file "/home/joseph/clojrss/atom2rss.xsl")) 
+    (compile-string atomf)))
+
 
 (defn replace-feed-by-url [db url nfeed]
   "Finds a feed in the db and replaces it with nfeed. Returns the new
