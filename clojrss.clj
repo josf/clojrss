@@ -2,11 +2,11 @@
 ;  (:import (java.io.BufferedReader FileReader)))
 
 (ns net.ramure.clojrss
-  (:use [clojure.contrib.duck-streams :only (reader spit)])
+  (:use [clojure.contrib.duck-streams :only (reader spit read-lines)])
   (:use [clojure.contrib.zip-filter.xml])
   (:import [clojure.zip])
   (:use [saxon])
-  (:use [clj-http-client.core]))
+  (:use [clj-http-client.core]))    
 
 (import '(java.net URL)
         '(java.lang StringBuilder)
@@ -30,11 +30,10 @@
 (defn parssrss [sq db]
   (if (not sq)
     db
-    (recur (rest sq) (db-add-line db (first sq)))))
+    (recur (next sq) (db-add-line db (first sq)))))
 
 (defn parse-rsslist-file [db urlfile]
-  (with-open [r (reader urlfile)]
-    (parssrss  (line-seq r) db)))
+    (parssrss  (read-lines urlfile) db))
 
 ;; irc example
 ;;(binding [*print-dup* true] (println
@@ -61,7 +60,6 @@
 (defn check-feed
   "Check if feed has been updated and grab it if it has. Returns a
 vector [body status ETag Last-Modified]"
-
   [feed etag lmodif]
   (let [[status headers body] (http-get feed 
                                         (cond
@@ -93,8 +91,11 @@ vector [body status ETag Last-Modified]"
   (clojure.zip/xml-zip (clojure.xml/parse (new org.xml.sax.InputSource
                                (new java.io.StringReader s)))))
 
+(defn clean-filename [dirty]
+  (.replace dirty "\"" ""))
+
 (defn write-rss-file [filename data]
-  (spit (rss-filename filename) data))
+  (spit (rss-filename (clean-filename filename)) data))
 
 (defn check-feed-type [xml]
 "returns :atom if atomfeed, :rss otherwise"
@@ -104,6 +105,13 @@ vector [body status ETag Last-Modified]"
                (attr :xmlns))
       :atom
       :rss)))
+
+
+
+(defn atom-to-rss [atomf]
+   ((compile-xslt (compile-file "/home/joseph/clojrss/atom2rss.xsl")) 
+    (compile-string atomf)))
+
 
 (defn feed-struct-update [feed]
   (let [feedvec (check-feed 
@@ -121,11 +129,6 @@ vector [body status ETag Last-Modified]"
         :etag  (nth feedvec 2)
         :lmodif (nth feedvec 3)
         :type feedtype))))
-
-(defn atom-to-rss [atomf]
-   ((compile-xslt (compile-file "/home/joseph/clojrss/atom2rss.xsl")) 
-    (compile-string atomf)))
-
 
 (defn replace-feed-by-url [db url nfeed]
   "Finds a feed in the db and replaces it with nfeed. Returns the new
