@@ -41,7 +41,7 @@
 (defn db-save [db filename]
   (spit 
    filename 
-   (with-out-str (print db))))
+   (binding [*print-dup* true] (pr-str db))))
 
 (defn db-serializable [db]
   (into (empty db)
