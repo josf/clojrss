@@ -60,20 +60,26 @@
 (defn check-feed
   "Check if feed has been updated and grab it if it has. Returns a
 vector [body status ETag Last-Modified]"
-  [feed etag lmodif]
+  [feed lmodif etag]
+  (println (str "Feed: " feed))
+  (println (str "1etag: " etag))
+  (println (str "1lmodif: " lmodif))
   (let [[status headers body] (http-get feed 
                                         (cond
                                          (and lmodif etag)
                                          { "If-Modified-Since" lmodif 
                                            "If-None-Match" etag}
                                          etag
-                                         {"If-None-Match" etag}
+                                         {"If-None-Match"  etag}
                                          lmodif  
-                                         { "If-Modified-Since" lmodif }))]
+                                         { "If-Modified-Since" lmodif }
+                                         ))]
     (when (and status
                (or (= status 200)
                    (= status 304)))
-      (println (str "Status: " status))
+      (when status (println (str "Status: " status)))
+      (when etag (println (str "Etag: " etag)))
+      (when lmodif (println (str "Lmodif: " lmodif)))
       [body status  
        (str (get headers "ETag"))
        (str (get headers "Last-Modified"))])))
