@@ -106,8 +106,6 @@ vector [body status ETag Last-Modified]"
       :atom
       :rss)))
 
-
-
 (defn atom-to-rss [atomf]
    ((compile-xslt (compile-file "/home/joseph/clojrss/atom2rss.xsl")) 
     (compile-string atomf)))
